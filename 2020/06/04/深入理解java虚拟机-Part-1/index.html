@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>深入理解java虚拟机(Part 1) | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="–Graciela咳咳咳东拼西凑于2018.12 写在前面Java 不仅仅是一门编程语言，它还是一个由一系列计算机软件和规范形成的技术体系，这个技术体系提供了完整的用于软件开发和跨平台部署的支持环境，并广泛应用于嵌入式系统、移动终端、企业服务器和大型机等各种场合。 Java优势 拥有一门结构严谨、面向对象的编程语言 摆脱了硬件平台的束缚，实现了“一次编写，到处运行”的理想 提供了一种相对安全的内存">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解java虚拟机(Part 1)">
+<meta property="og:url" content="http://yoursite.com/2020/06/04/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3java%E8%99%9A%E6%8B%9F%E6%9C%BA-Part-1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="–Graciela咳咳咳东拼西凑于2018.12 写在前面Java 不仅仅是一门编程语言，它还是一个由一系列计算机软件和规范形成的技术体系，这个技术体系提供了完整的用于软件开发和跨平台部署的支持环境，并广泛应用于嵌入式系统、移动终端、企业服务器和大型机等各种场合。 Java优势 拥有一门结构严谨、面向对象的编程语言 摆脱了硬件平台的束缚，实现了“一次编写，到处运行”的理想 提供了一种相对安全的内存">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://uploader.shimo.im/f/HBEBLZAe6G0fGc2f.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/vacFhR42WnE9BMFG.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/rTpX5nXJNWEfoAuP.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/lzy0nBD7iTQEEBrx.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/OSir5k2OY9EbE2SD.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/r6jvh4rrkDIdVD7w.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/YuEOJz8sQxsUhZtk.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/rsdYiW5P9oQOvHRz.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/wLr5fXJ8D0sWOjVe.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/VrSn2PrQLuwVtTun.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/rspQ4CnYkSgt6O1u.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/NyQ5LkIhID08uRaq.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/Eo0zgdT3MwYZiwG1.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/tmXIXBv9xKo7YRxs.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/SyL3E2NVnh0uFISY.png!thumbnail">
+<meta property="og:image" content="http://wiki.jikexueyuan.com/project/java-vm/images/classonload.png">
+<meta property="og:image" content="http://wiki.jikexueyuan.com/project/java-vm/images/loader.png">
+<meta property="og:image" content="https://uploader.shimo.im/f/HGCrD9u8o2gfjKqw.png!thumbnail">
+<meta property="og:image" content="http://wiki.jikexueyuan.com/project/java-vm/images/reference.jpg">
+<meta property="og:image" content="http://wiki.jikexueyuan.com/project/java-vm/images/interface.png">
+<meta property="og:image" content="https://uploader.shimo.im/f/Ua1MKzWZi9QqeedP.png!thumbnail">
+<meta property="article:published_time" content="2020-06-03T20:10:04.000Z">
+<meta property="article:modified_time" content="2020-06-03T20:12:44.827Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://uploader.shimo.im/f/HBEBLZAe6G0fGc2f.png!thumbnail">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-深入理解java虚拟机-Part-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/06/04/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3java%E8%99%9A%E6%8B%9F%E6%9C%BA-Part-1/" class="article-date">
+  <time datetime="2020-06-03T20:10:04.000Z" itemprop="datePublished">2020-06-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      深入理解java虚拟机(Part 1)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="–Graciela"><a href="#–Graciela" class="headerlink" title="–Graciela"></a><img src="https://uploader.shimo.im/f/HBEBLZAe6G0fGc2f.png!thumbnail" alt="图片">–Graciela</h2><p>咳咳咳东拼西凑于2018.12</p>
+<h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>Java 不仅仅是一门编程语言，它还是一个由一系列计算机软件和规范形成的技术体系，这个技术体系提供了完整的用于软件开发和跨平台部署的支持环境，并广泛应用于嵌入式系统、移动终端、企业服务器和大型机等各种场合。</p>
+<h1 id="Java优势"><a href="#Java优势" class="headerlink" title="Java优势"></a>Java优势</h1><ol>
+<li>拥有一门结构严谨、面向对象的编程语言</li>
+<li>摆脱了硬件平台的束缚，实现了“一次编写，到处运行”的理想</li>
+<li>提供了一种相对安全的内存管理和访问机制，避免了绝大部分的内存泄漏和指针越界问题</li>
+<li>实现了热点代码检测和运行时编译及优化，这使得 Java 应用能随着运行时间的增加而获得更高的性能</li>
+<li>有一套完善的应用程序接口，还有无数的来自商业机构和开源社区的第三方类库来帮助实现各种各样的功能。</li>
+</ol>
+<p>等等……</p>
+<h1 id="Java技术体系"><a href="#Java技术体系" class="headerlink" title="Java技术体系"></a>Java技术体系</h1><h2 id="按照各组成部分功能划分"><a href="#按照各组成部分功能划分" class="headerlink" title="按照各组成部分功能划分"></a>按照各组成部分功能划分</h2><p><img src="https://uploader.shimo.im/f/vacFhR42WnE9BMFG.png!thumbnail" alt="图片"></p>
+<h2 id="按照业务领域划分"><a href="#按照业务领域划分" class="headerlink" title="按照业务领域划分"></a>按照业务领域划分</h2><ul>
+<li>Java Card：支持一些Java小程序（Applets）运行在小内存设备（如智能卡）上的平台。</li>
+<li>Java ME（Micro Edition）：支持Java程序运行在移动终端（手机、PDA）上的平台，对 Java API 有所精简，并加入了针对移动终端的支持，这个版本以前称为J2ME。</li>
+<li>Java SE（Standard Edition）：支持面向桌面级应用（如 Windows 下的应用程序）的 Java 平台，提供了完整的 Java 核心 API，这个版本以前称为 J2SE。</li>
+<li>Java EE（Enterprise Edition）：支持使用多层架构的企业应用（如 ERP、CRM 应用）的 Java 平台，除了提供 Java SE API 外，还对其做了大量的扩充并提供了相关的部署支持，这个版本以前称为 J2EE。</li>
+</ul>
+<p>以上就是我们常看到的对java技术体系的划分，如果仍不能很清晰的认识，所以下面详细介绍java体系结构</p>
+<h2 id="java体系结构"><a href="#java体系结构" class="headerlink" title="java体系结构"></a>java体系结构</h2><p>java体系结构包括四个独立但相关的技术：</p>
+<ul>
+<li>Java程序设计语言</li>
+<li>Java class文件格式</li>
+<li>Java应用编程接口（API）</li>
+<li>Java虚拟机</li>
+</ul>
+<p>当编写并运行一个Java程序时，就同时体验了这四种技术。用Java编程语言编写源代码，把它编译成Java class文件，在Java虚拟机中运行class文件。编写程序时，通过调用类（这些类实现了Java API）中的方法来访问系统资源（比如I/O）。当程序运行的时候，它通过调用class文件中实现了JavaAPI的方法来满足程序的Java API调用。</p>
+<p><img src="https://uploader.shimo.im/f/rTpX5nXJNWEfoAuP.png!thumbnail" alt="图片"></p>
+<p>Java 编译器只需面向 JVM，生成 JVM 能理解的代码或字节码文件。Java 源文件经编译器，编译成字节码程序，通过 JVM 将每一条指令翻译成不同平台机器码，通过特定平台运行。</p>
+<h2 id="java虚拟机体系结构"><a href="#java虚拟机体系结构" class="headerlink" title="java虚拟机体系结构"></a>java虚拟机体系结构</h2><p>Java虚拟机规范中，一个虚拟机实例的行为是按照子系统、内存区、数据类型和指令这几个术语来描述，来一起展现抽象的虚拟机内部抽象体系结构。但是规范中的这些定义不是要强制规定体系结构，而是为了严格定义这些实现的外部特征，通过定义这些抽象的组成部分，以及它们之间的交互，来定义任何Java虚拟机都必须遵守的行为。</p>
+<p>如下图为Java虚拟机的结构框图，包括在规范中描述的主要子系统和内存区。每个Java虚拟机都有一个类装载子系统，根据给定的全限定名来装入类型(类或接口)。每个Java虚拟机都有一个执行引擎，负责执行那些包含在被装载类的方法中的指令。</p>
+<p><img src="https://uploader.shimo.im/f/lzy0nBD7iTQEEBrx.png!thumbnail" alt="图片"></p>
+<h2 id="java平台"><a href="#java平台" class="headerlink" title="java平台"></a>java平台</h2><p>java虚拟机和java API组成了一个“平台”，所有Java程序都在上面编译。Java虚拟机和Java API的组合除了被称为Java运行时系统之外，还被称为Java平台。（从版本1.2开始，称为Java 2平台）。Java程序可以在不同的计算机上运行，是因为Java平台自己可以用软件实现。Java程序可以在有Java平台的任何地方运行。如下图，在Java平台上运行的Java程序。</p>
+<p><img src="https://uploader.shimo.im/f/OSir5k2OY9EbE2SD.png!thumbnail" alt="图片"></p>
+<h1 id="JVM初步了解"><a href="#JVM初步了解" class="headerlink" title="JVM初步了解"></a>JVM初步了解</h1><h2 id="什么是JVM"><a href="#什么是JVM" class="headerlink" title="什么是JVM"></a>什么是JVM</h2><p>Java面向网络的核心就是Java虚拟机，它支持Java面向网络体系结构三大支柱的所有方面：平台无关性、安全性和网络移动性。Java虚拟机是一台在 Java 编译器和 os 平台之间的虚拟处理器，可以在上面执行Java字节码程序。</p>
+<p>其规范定义了每个Java虚拟机都必须实现的特性，但是为每个特性实现留下了很多选择。举个栗子～虽然每个Java虚拟机都必须能执行Java字节码，但是用何种技术来执行是可以选择的。而且它的规范很灵活，允许虚拟机用纯粹软件方式来实现，也可以很大部分由硬件实现。Java规范本质上的灵活性保证了它能在很广泛的计算机和设备上得到实现。</p>
+<h2 id="JVM运行时数据区（存疑）后面学习后补充"><a href="#JVM运行时数据区（存疑）后面学习后补充" class="headerlink" title="JVM运行时数据区（存疑）后面学习后补充"></a>JVM运行时数据区（存疑）后面学习后补充</h2><h1 id="正文：虚拟机执行子系统"><a href="#正文：虚拟机执行子系统" class="headerlink" title="正文：虚拟机执行子系统"></a>正文：虚拟机执行子系统</h1><h1 id="java程序执行过程"><a href="#java程序执行过程" class="headerlink" title="java程序执行过程"></a>java程序执行过程</h1><p><img src="https://uploader.shimo.im/f/r6jvh4rrkDIdVD7w.png!thumbnail" alt="图片"></p>
+<p>例如：</p>
+<p>现有HelloWorld.java  是我们的java代码，源文件（保存在硬盘中）</p>
+<ol>
+<li>javac HelloWorld.java </li>
+</ol>
+<p>编译成字节码文件（如果用Eclipse IDE或者IDEA，保存代码时开发工具就帮我们完成了编译工作，可以在目录下看到class文件）（class文件仍保存在硬盘中）</p>
+<ol start="2">
+<li>java HelloWorld （执行红框中操作）<ol>
+<li>JRE的类加载器从硬盘将class文件读取载入到系统分配给JVM的内存区域（运行数据区Runtime Data Areas.）</li>
+<li>执行引擎解释或编译类文件，转化成特定CPU的机器码</li>
+<li>CPU执行机器码</li>
+</ol>
+</li>
+</ol>
+<p>下面会着重介绍这两个过程：</p>
+<p>不论是物理机还是虚拟机，大部分的程序代码从开始编译到最终转化成物理机的目标代码或虚拟机能执行的指令集之前，都会按照如下图所示的各个步骤进行：</p>
+<p><img src="https://uploader.shimo.im/f/YuEOJz8sQxsUhZtk.png!thumbnail" alt="图片"></p>
+<p>其中绿色的模块可以选择性实现。很容易看出，上图中间的那条分支是解释执行的过程（即一条字节码一条字节码地解释执行，如 JavaScript），而下面的那条分支就是传统编译原理中从源代码到目标机器代码的生成过程。</p>
+<p>如今，基于物理机、虚拟机等的语言，大多都遵循这种基于现代经典编译原理的思路，在执行前先对程序源码进行词法解析和语法解析处理，把源码转化为抽象语法树。对于一门具体语言的实现来说，词法和语法分析乃至后面的优化器和目标代码生成器都可以选择独立于执行引擎，形成一个完整意义的编译器去实现，这类代表是 C/C++语言。也可以把抽象语法树或指令流之前的步骤实现一个半独立的编译器，这类代表是 Java 语言。又或者可以把这些步骤和执行引擎全部集中在一起实现，如大多数的 JavaScript 执行器。</p>
+<h2 id="javac编译"><a href="#javac编译" class="headerlink" title="javac编译"></a>javac编译</h2><p>1的过程：*.java    *.class</p>
+<p>这里的 javac 编译器称为前端编译器，其他的前端编译器还有诸如 Eclipse JDT 中的增量式编译器 ECJ 等。</p>
+<p><img src="https://uploader.shimo.im/f/rsdYiW5P9oQOvHRz.png!thumbnail" alt="图片"></p>
+<h3 id="词法、语法分析"><a href="#词法、语法分析" class="headerlink" title="词法、语法分析"></a>词法、语法分析</h3><p>词法分析是将源代码的字符流转变为标记（Token）集合。单个字符是程序编写过程中的的最小元素，而标记则是编译过程的最小元素，关键字、变量名、字面量、运算符等都可以成为标记，比如整型标志 int 由三个字符构成，但是它只是一个标记，不可拆分。</p>
+<p>语法分析是根据Token序列来构造抽象语法树的过程。抽象语法树是一种用来描述程序代码语法结构的树形表示方式，语法树的每一个节点都代表着程序代码中的一个语法结构，如 bao、类型、修饰符、运算符等。经过这个步骤后，编译器就基本不会再对源码文件进行操作了，后续的操作都建立在抽象语法树之上。</p>
+<h3 id="填充符号表"><a href="#填充符号表" class="headerlink" title="填充符号表"></a>填充符号表</h3><p>完成了语法分析和词法分析之后，下一步就是填充符号表的过程。符号表是由一组符号地址和符号信息构成的表格。符号表中所登记的信息在编译的不同阶段都要用到，在语义分析（后面的步骤）中，符号表所登记的内容将用于语义检查和产生中间代码，在目标代码生成阶段，党对符号名进行地址分配时，符号表是地址分配的依据。</p>
+<h3 id="语义分析"><a href="#语义分析" class="headerlink" title="语义分析"></a>语义分析</h3><p>语法树能表示一个结构正确的源程序的抽象，但无法保证源程序是符合逻辑的。而语义分析的主要任务是读结构上正确的源程序进行上下文有关性质的审查。语义分析过程分为标注检查和数据及控制流分析两个步骤：</p>
+<ul>
+<li>标注检查步骤检查的内容包括诸如变量使用前是否已被声明、变量和赋值之间的数据类型是否匹配等。</li>
+<li>数据及控制流分析是对程序上下文逻辑更进一步的验证，它可以检查出诸如程序局部变量在使用前是否有赋值、方法的每条路径是否都有返回值、是否所有的受查异常都被正确处理了等问题。<h3 id="字节码生成"><a href="#字节码生成" class="headerlink" title="字节码生成"></a>字节码生成</h3></li>
+</ul>
+<p>字节码生成是 javac 编译过程的最后一个阶段。字节码生成阶段不仅仅是把前面各个步骤所生成的信息转化成字节码写到磁盘中，编译器还进行了少量的代码添加和转换工作。 实例构造器()方法和类构造器()方法就是在这个阶段添加到语法树之中的（这里的实例构造器并不是指默认的构造函数，而是指我们自己重载的构造函数，如果用户代码中没有提供任何构造函数，那编译器会自动添加一个没有参数、访问权限与当前类一致的默认构造函数，这个工作在填充符号表阶段就已经完成了）。</p>
+<h2 id="后端编译执行"><a href="#后端编译执行" class="headerlink" title="后端编译执行"></a>后端编译执行</h2><p>将字节码转换为机器码</p>
+<p>2的过程：<img src="https://uploader.shimo.im/f/wLr5fXJ8D0sWOjVe.png!thumbnail" alt="图片"></p>
+<p>why？为什么不都编译呢？为什么要有的编译有的解释呢？</p>
+<h3 id="不同的执行引擎"><a href="#不同的执行引擎" class="headerlink" title="不同的执行引擎"></a>不同的执行引擎</h3><p>不同Java虚拟机中，执行引擎可能实现的非常不同。</p>
+<p>在由软件实现的虚拟机</p>
+<p>最简单的执行引擎就是用解释器一次性解释字节码。对字节码逐条解释执行，这种方式的执行速度相对会比较慢，尤其当某个方法或代码块运行的特别频繁时，这种方式的执行效率就显得很低。</p>
+<p>另一种执行引擎更快，但更消耗内存—“即时编译器”（just-in-time compiler）。第一次被执行的字节码会被编译成本地机器代码。编译出的本地机器代码会被缓存，当方法以后被调用的时候可以重用。HotSpot 虚拟机中内置了两个JIT编译器：Client Complier 和 Server Complier，分别用在客户端和服务端</p>
+<p>第三种执行引擎是自适应优化器。虚拟机开始的时候解释字节码，但是会监视运行中程序的活动，并记录下使用最频繁的代码段。程序运行的时候，虚拟机之把那些活动最频繁的代码编译成本地代码，其他的代码由于使用的并不很频繁，继续保留为字节码—由虚拟机继续解释它们。一个自适应的优化器可以使得Java虚拟机在80%-90%的时间里执行被优化过的本地代码，只需要编译10%-20%对性能有影响的代码。</p>
+<p>由硬件芯片构成的虚拟机：</p>
+<p>用本地方法执行Java字节码。这种执行引擎实际上是内嵌在芯片里的。</p>
+<p>现在主流的商用虚拟机（如Sun HotSpot、IBM J9）中几乎都同时包含解释器和编译器（三大商用虚拟机之一的 JRockit 是个例外，它内部没有解释器，因此会有启动相应时间长之类的缺点，但它主要是面向服务端的应用，这类应用一般不会重点关注启动时间）。</p>
+<p>解释器和编译器各有优势：当程序需要迅速启动和执行时，解释器可以首先发挥作用，省去编译的时间，立即执行；当程序运行后，随着时间的推移，编译器逐渐会发挥作用，把越来越多的代码编译成本地代码后，可以获取更高的执行效率。解释执行可以节约内存，而编译执行可以提升效率。</p>
+<p>所以目前主流的 HotSpot 虚拟机中默认是采用解释器与其中一个JIT编译器直接配合的方式工作。运行过程中会被即时编译器编译的是“热点代码“：</p>
+<ul>
+<li>被多次调用的方法。</li>
+<li>被多次调用的循环体。</li>
+</ul>
+<p>两种情况，编译器都是以整个方法作为编译对象，这种编译也是虚拟机中标准的编译方式。要知道一段代码或方法是不是热点代码，是不是需要触发即时编译，需要进行 Hot Spot Detection（热点探测）。</p>
+<h3 id="热点探测（Hot-Spot-Detection）"><a href="#热点探测（Hot-Spot-Detection）" class="headerlink" title="热点探测（Hot Spot Detection）"></a>热点探测（Hot Spot Detection）</h3><p><strong>基于采样的热点探测</strong>：</p>
+<p>采用这种方法的虚拟机会周期性地检查各个线程的栈顶，如果发现某些方法经常出现在栈顶，那这段方法代码就是“热点代码”。这种探测方法的好处是实现简单高效，还可以很容易地获取方法调用关系，缺点是很难精确地确认一个方法的热度，容易因为受到线程阻塞或别的外界因素的影响而扰乱热点探测。</p>
+<p><strong>基于计数器的热点探测</strong>：</p>
+<p>采用这种方法的虚拟机会为每个方法，甚至是代码块建立计数器，统计方法的执行次数，如果执行次数超过一定的阀值，就认为它是“热点方法”。这种统计方法实现复杂一些，需要为每个方法建立并维护计数器，而且不能直接获取到方法的调用关系，但是它的统计结果相对更加精确严谨。</p>
+<p>在 HotSpot 虚拟机中使用的是第二种——基于计数器的热点探测方法，因此它为每个方法准备了两个计数器：方法调用计数器和回边计数器。</p>
+<p><strong>方法调用计数器</strong></p>
+<p>用来统计方法调用的次数，在默认设置下，方法调用计数器统计的并不是方法被调用的绝对次数，而是一个相对的执行频率，即一段时间内方法被调用的次数。</p>
+<p><strong>回边计数器</strong></p>
+<p>用于统计一个方法中循环体代码执行的次数（准确地说，应该是回边的次数，因为并非所有的循环都是回边），在字节码中遇到控制流向后跳转的指令就称为“回边”。</p>
+<p>在确定虚拟机运行参数的前提下，这两个计数器都有一个确定的阀值，当计数器的值超过了阀值，就会触发JIT编译。触发了 JIT 编译后，在默认设置下，执行引擎并不会同步等待编译请求完成，而是继续进入解释器按照解释方式执行字节码，直到提交的请求被编译器编译完成为止（编译工作在后台线程中进行）。当编译工作完成后，下一次调用该方法或代码时，就会使用已编译的版本。</p>
+<p>由于方法计数器触发即时编译的过程与回边计数器触发即时编译的过程类似，下图为方法调用计数器触发即时编译的流程：</p>
+<p><img src="https://uploader.shimo.im/f/VrSn2PrQLuwVtTun.png!thumbnail" alt="图片"></p>
+<h1 id="类加载机制"><a href="#类加载机制" class="headerlink" title="类加载机制"></a>类加载机制</h1><p>还记得这个图吗？</p>
+<p><img src="https://uploader.shimo.im/f/rspQ4CnYkSgt6O1u.png!thumbnail" alt="图片"></p>
+<p>java虚拟机的主要任务是装载class文件并且执行其中的字节码。包括一个类装载器（class loader），可以从程序和API中装载class文件。Java API中只有程序执行时需要的那些类才会被装载。字节码由执行引擎来执行。</p>
+<p><img src="https://uploader.shimo.im/f/NyQ5LkIhID08uRaq.png!thumbnail" alt="图片"></p>
+<p><img src="https://uploader.shimo.im/f/Eo0zgdT3MwYZiwG1.png!thumbnail" alt="图片"></p>
+<p><img src="https://uploader.shimo.im/f/tmXIXBv9xKo7YRxs.png!thumbnail" alt="图片"></p>
+<p>类加载器的体系结构是Java虚拟机在安全性和网络移动性上发挥重要作用的一个方面，上图仅有一个“类装载器”的方块表示类加载器。但实际在JVM中，存在着多个类加载器，所以上图中的方块表示的是一个可能包含多个类装载器的子系统。JVM拥有灵活的类装载器体系结构，从而使Java应用程序得以用自定义的方式来实现类的装载。</p>
+<p>一个JAVA应用程序可以使用两种类装载器：“启动”–bootstrap类装载器和用户自定义的类装载器。（这是从java虚拟机角度划分的）</p>
+<p><strong>启动类装载器</strong>（是系统中唯一的）是java虚拟机实现的一部分。例如：如果Java虚拟机在已有操作系统上实现为C程序，则启动类装载器就会使此C程序的一个部分。启动类装载器通常使用某种默认方式从本地磁盘中装载类，包括Java API的类（启动类装载器也被成为原始类装载器、系统……或者默认……）</p>
+<p><strong>用户定义的类装载器</strong>Java应用程序能够在运行时安装用户定义的类装载器，这种类装载器能够使用自定义的方式来装载类，例如：从网络上下载class文件。尽管启动类装载器是虚拟机实现的本质部分，而用户定义的类装载器不是；但用户定义的类装载器能用Java编写，能被编译为class文件，从而能被虚拟机装载，还能像其他对象一样实例化。实际上只是运行中的Java应用程序可执行代码中的一部分。</p>
+<p>因为有用户定义类装载器，所以不必在编译时就知道运行中的Java应用程序最终会加入所有的类，使得在运行时扩展Java应用程序成为可能。当它运行时，应用程序能够决定它需要哪些额外的类，能够决定是使用一个还是更多的用户定义的类装载器来装载。因为是Java编写，能用任何在Java代码中可以表述的风格来进行类的装载。这些类可以通过网络下载，可以从某些数据库获取，甚至可动态生成。</p>
+<p><img src="https://uploader.shimo.im/f/SyL3E2NVnh0uFISY.png!thumbnail" alt="图片"></p>
+<p>每个类被装载的时候，Java虚拟机都监视着这个类，看它到底是启动类装载器还是用户定义类装载器装载的。当被装载的类引用了另一个类时，虚拟机就会使用装载第一个类的类装载器装载被引用的类。举个栗子吧：如果虚拟机使用一个特定的类装载器装载Volcano这个类，他就会使用这个类装载器装载Volcano类使用的所有类。如果Volcano使用了一个Litt的类，（比如调用了Litt类的一个方法），那么虚拟机将使用装载Volcano的同一个类装载器装载Litt。这样被这个类装载器返回的Litt类就动态地与Volcano类建立了联系。</p>
+<p>由于JVM采用这种方式进行类的加载，被装载的类默认情况下只能看到被同一个类装载器装载的别的类。通过这种方法，Java体系结构允许在一个Java应用程序中建立多个命名空间。运行时的Java程序每个类装载器都有自己的命名空间。被不同的类装载器装载的类存放在不同的命名空间中，不能互相访问，除非应用程序显示地允许这样做。当编写一个Java应用程序，从不同源文件装载的类可以分隔在不同的命名空间中。这样就能使用Java类装载器的体系结构来控制从不同源文件中装载的代码之间的相互影响，特别是能够阻止恶意代码获取访问和破坏善意代码的权限。每个类装载器都有自己的命名空间，其中维护着由它装载的类型。所以一个Java程序可以多次装载具有同一个全限定名的多个类型。这样一个类型的全限定名就不足以确定在一个Java虚拟机中的唯一性。因此，当多个类装载器都装载了同名的类型时，为了惟一地标识该类型，还要在类型名称前加上装载该类型（指出它所位于的命名空间）的类装载器标识。</p>
+<p>举个栗子：</p>
+<p>web浏览器是个动态扩展的栗子，web浏览器使用用户定义的类装载器，从网络上下载用于java applet的calss文件。web浏览器使用一个用来安装用户定义类加载器的java应用程序，这个用户定义类加载器常被称为Java applet类装载器，它知道如何向http服务器请求class文件。JavaApplet可以作为动态扩展的例子，是因为Java应用程序并不知道它什么时候会开始从网络下载浏览器请求的class文件。只有当浏览器遇到有Java applet的页面时，才决定是否需要下载class文件。Web浏览器启动的Java应用程序通常为每个提供class文件的网络地址分别创建不同的用户定义类装载器，因此，不同的用户定义类装载器装载不同来源的class文件。这就可以把它们分别放置在Java主机应用程序的不同命名空间之下。由于不同来源的Java applet文件放置在不同的命名空间中，恶意的Java applet代码就不会直接访问从别的地方下载的class文件。这就能够限制或阻止不同来源的代码之间的相互访问。</p>
+<p>类装载器子系统涉及Java虚拟机的其他几个组成部分，以及几个来自java.lang库的类。比如，用户自定义的类装载器是普通的Java对象，它的类必须派生自java.lang.ClassLoader类。ClassLoader中定义的方法为程序提供了访问类装载器机制的接口。此外，对于每一个被装载的类型，JAVA虚拟机都会为它创建一个java.lang.Class类的实例来代表该类型。和所有其他对象一样，用户自定义的类装载器以及Class类的实例都放在内存中的堆区，而装载的类型信息则都位于方法区。</p>
+<p>类装载器子系统除了要定位和导入二进制class文件外，还必须负责验证被导入类的正确性，为类变量分配并初始化内存，以及帮助解析符号引用。这些动作必须严格按以下顺序进行：</p>
+<p>（1）装载——查找并装载类型的二进制数据。</p>
+<p>（2）连接——指向验证、准备、以及解析（可选）。</p>
+<p>●<strong>验证</strong>确保被导入类型的正确性。</p>
+<p>●<strong>准备</strong>为类变量分配内存，并将其初始化为默认值。</p>
+<p>●<strong>解析</strong>把类型中的符号引用转换为直接引用。</p>
+<p>（3）初始化——把类变量初始化为正确初始值。</p>
+<p>每个JAVA虚拟机实现都必须有一个启动类装载器，它知道怎么装载受信任的类。</p>
+<h2 id="类加载过程"><a href="#类加载过程" class="headerlink" title="类加载过程"></a>类加载过程</h2><p>类从被加载到虚拟机内存中开始，到卸载出内存为止，它的整个生命周期包括：加载、验证、准备、解析、初始化、使用和卸载七个阶段。它们开始的顺序如下图所示：</p>
+<p><img src="http://wiki.jikexueyuan.com/project/java-vm/images/classonload.png" alt="图片"></p>
+<p>其中类加载的过程包括了加载、验证、准备、解析、初始化五个阶段。在这五个阶段中，加载、验证、准备和初始化这四个阶段发生的顺序是确定的，而解析阶段则不一定，它在某些情况下可以在初始化阶段之后开始，这是为了支持 Java 语言的运行时绑定（也成为动态绑定或晚期绑定）。</p>
+<p>Java 中的绑定：绑定指的是把一个方法的调用与方法所在的类(方法主体)关联起来，对 Java 来说，绑定分为静态绑定和动态绑定：</p>
+<ul>
+<li>静态绑定：即前期绑定。在程序执行前方法已经被绑定，此时由编译器或其它连接程序实现。针对 Java，简单的可以理解为程序编译期的绑定。Java 当中的方法只有 final，static，private 和构造方法是前期绑定的。</li>
+<li>动态绑定：即晚期绑定，也叫运行时绑定。在运行时根据具体对象的类型进行绑定。在 Java 中，几乎所有的方法都是后期绑定的。</li>
+</ul>
+<p>另外注意这里的几个阶段是按顺序开始，而不是按顺序进行或完成，因为这些阶段通常都是互相交叉地混合进行的，通常在一个阶段执行的过程中调用或激活另一个阶段。</p>
+<p>下面详细讲述类加载过程中每个阶段所做的工作。</p>
+<h3 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h3><p>加载时类加载过程的第一个阶段，在加载阶段，虚拟机需要完成以下三件事情：</p>
+<ul>
+<li>通过一个类的全限定名来获取其定义的二进制字节流。</li>
+<li>将这个字节流所代表的静态存储结构转化为方法区的运行时数据结构。</li>
+<li>在 Java 堆中生成一个代表这个类的 java.lang.Class 对象，作为对方法区中这些数据的访问入口。</li>
+</ul>
+<p>注意，这里第 1 条中的二进制字节流并不只是单纯地从 Class 文件中获取，比如它还可以从 Jar 包中获取、从网络中获取（最典型的应用便是 Applet）、由其他文件生成（JSP 应用）等。</p>
+<p>相对于类加载的其他阶段而言，加载阶段（准确地说，是加载阶段获取类的二进制字节流的动作）是可控性最强的阶段，因为开发人员既可以使用系统提供的类加载器来完成加载，也可以自定义自己的类加载器来完成加载。</p>
+<p>加载阶段完成后，虚拟机外部的 二进制字节流就按照虚拟机所需的格式存储在方法区之中，而且在 Java 堆中也创建一个 java.lang.Class 类的对象，这样便可以通过该对象访问方法区中的这些数据。</p>
+<p>类加载器虽然只用于实现类的加载动作，但它在 Java 程序中起到的作用却远远不限于类的加载阶段。对于任意一个类，都需要由它的类加载器和这个类本身一同确定其在就 Java 虚拟机中的唯一性，也就是说，即使两个类来源于同一个 Class 文件，只要加载它们的类加载器不同，那这两个类就必定不相等。这里的“相等”包括了代表类的 Class 对象的 equals（）、isAssignableFrom（）、isInstance（）等方法的返回结果，也包括了使用 instanceof 关键字对对象所属关系的判定结果。</p>
+<p>站在 Java 虚拟机的角度来讲，只存在两种不同的类加载器：</p>
+<ul>
+<li>启动类加载器：它使用 C++ 实现（这里仅限于 Hotspot，也就是 JDK1.5 之后默认的虚拟机，有很多其他的虚拟机是用 Java 语言实现的），是虚拟机自身的一部分。</li>
+<li>所有其他的类加载器：这些类加载器都由 Java 语言实现，独立于虚拟机之外，并且全部继承自抽象类 java.lang.ClassLoader，这些类加载器需要由启动类加载器加载到内存中之后才能去加载其他的类。</li>
+</ul>
+<p>站在 Java 开发人员的角度来看，类加载器可以大致划分为以下三类：</p>
+<ul>
+<li>启动类加载器：Bootstrap ClassLoader，跟上面相同。它负责加载存放在JDK\jre\li(JDK 代表 JDK 的安装目录，下同)下，或被-Xbootclasspath参数指定的路径中的，并且能被虚拟机识别的类库（如 rt.jar，所有的java.*开头的类均被 Bootstrap ClassLoader 加载）。启动类加载器是无法被 Java 程序直接引用的。</li>
+<li>扩展类加载器：Extension ClassLoader，该加载器由sun.misc.Launcher$ExtClassLoader实现，它负责加载JDK\jre\lib\ext目录中，或者由 java.ext.dirs 系统变量指定的路径中的所有类库（如javax.*开头的类），开发者可以直接使用扩展类加载器。</li>
+<li>应用程序类加载器：Application ClassLoader，该类加载器由 sun.misc.Launcher$AppClassLoader 来实现，它负责加载用户类路径（ClassPath）所指定的类，开发者可以直接使用该类加载器，如果应用程序中没有自定义过自己的类加载器，一般情况下这个就是程序中默认的类加载器。</li>
+</ul>
+<p>应用程序都是由这三种类加载器互相配合进行加载的，如果有必要，我们还可以加入自定义的类加载器。因为 JVM 自带的 ClassLoader 只是懂得从本地文件系统加载标准的 java class 文件，因此如果编写了自己的 ClassLoader，便可以做到如下几点：</p>
+<ul>
+<li>在执行非置信代码之前，自动验证数字签名。</li>
+<li>动态地创建符合用户特定需要的定制化构建类。</li>
+<li>从特定的场所取得 java class，例如数据库中和网络中。</li>
+</ul>
+<p>事实上当使用 Applet 的时候，就用到了特定的 ClassLoader，因为这时需要从网络上加载 java class，并且要检查相关的安全信息，应用服务器也大都使用了自定义的 ClassLoader 技术。</p>
+<p>这几种类加载器的层次关系如下图所示：</p>
+<p><img src="http://wiki.jikexueyuan.com/project/java-vm/images/loader.png" alt="图片"></p>
+<p>这种层次关系称为类加载器的双亲委派模型。我们把每一层上面的类加载器叫做当前层类加载器的父加载器，当然，它们之间的父子关系并不是通过继承关系来实现的，而是使用组合关系来复用父加载器中的代码。该模型在 JDK1.2 期间被引入并广泛应用于之后几乎所有的 Java 程序中，但它并不是一个强制性的约束模型，而是 Java 设计者们推荐给开发者的一种类的加载器实现方式。</p>
+<p>双亲委派模型的工作流程是：如果一个类加载器收到了类加载的请求，它首先不会自己去尝试加载这个类，而是把请求委托给父加载器去完成，依次向上，因此，所有的类加载请求最终都应该被传递到顶层的启动类加载器中，只有当父加载器在它的搜索范围中没有找到所需的类时，即无法完成该加载，子加载器才会尝试自己去加载该类。</p>
+<p>使用双亲委派模型来组织类加载器之间的关系，有一个很明显的好处，就是 Java 类随着它的类加载器（说白了，就是它所在的目录）一起具备了一种带有优先级的层次关系，这对于保证 Java 程序的稳定运作很重要。例如，类java.lang.Object 类存放在JDK\jre\lib下的 rt.jar 之中，因此无论是哪个类加载器要加载此类，最终都会委派给启动类加载器进行加载，这边保证了 Object 类在程序中的各种类加载器中都是同一个类。</p>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>验证的目的是为了确保 Class 文件中的字节流包含的信息符合当前虚拟机的要求，而且不会危害虚拟机自身的安全。不同的虚拟机对类验证的实现可能会有所不同，但大致都会完成以下四个阶段的验证：文件格式的验证、元数据的验证、字节码验证和符号引用验证。</p>
+<ul>
+<li>文件格式的验证：验证字节流是否符合 Class 文件格式的规范，并且能被当前版本的虚拟机处理，该验证的主要目的是保证输入的字节流能正确地解析并存储于方法区之内。经过该阶段的验证后，字节流才会进入内存的方法区中进行存储，后面的三个验证都是基于方法区的存储结构进行的。</li>
+<li>元数据验证：对类的元数据信息进行语义校验（其实就是对类中的各数据类型进行语法校验），保证不存在不符合 Java 语法规范的元数据信息。</li>
+<li>字节码验证：该阶段验证的主要工作是进行数据流和控制流分析，对类的方法体进行校验分析，以保证被校验的类的方法在运行时不会做出危害虚拟机安全的行为。</li>
+<li>符号引用验证：这是最后一个阶段的验证，它发生在虚拟机将符号引用转化为直接引用的时候（解析阶段中发生该转化，后面会有讲解），主要是对类自身以外的信息（常量池中的各种符号引用）进行匹配性的校验。<h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3></li>
+</ul>
+<p>准备阶段是正式为类变量分配内存并设置类变量初始值的阶段，这些内存都将在方法区中分配。对于该阶段有以下几点需要注意：</p>
+<ul>
+<li>这时候进行内存分配的仅包括类变量（static），而不包括实例变量，实例变量会在对象实例化时随着对象一块分配在 Java 堆中。</li>
+<li>这里所设置的初始值通常情况下是数据类型默认的零值（如 0、0L、null、false 等），而不是被在 Java 代码中被显式地赋予的值。</li>
+</ul>
+<p>JVM 的类加载是通过 ClassLoader 及其子类来完成的，类的层次关系和加载顺序可以由下图来描述：</p>
+<p><img src="https://uploader.shimo.im/f/HGCrD9u8o2gfjKqw.png!thumbnail" alt="图片"></p>
+<p><strong>1）Bootstrap ClassLoader</strong></p>
+<p>负责加载$JAVA_HOME中jre/lib/rt.jar里所有的 class，由 C++ 实现，不是 ClassLoader 子类。</p>
+<p><strong>2）Extension ClassLoader</strong></p>
+<p>负责加载Java平台中扩展功能的一些 jar 包，包括$JAVA_HOME中jre/lib/*.jar或-Djava.ext.dirs指定目录下的 jar 包。</p>
+<p><strong>3）App ClassLoader</strong></p>
+<p>负责记载 classpath 中指定的 jar 包及目录中 class。</p>
+<p><strong>4）Custom ClassLoader</strong></p>
+<p>用户自定义的类装载器是普通的Java对象，所以必须派生自java.lang.ClassLoader类，属于应用程序根据自身需要自定义的 ClassLoader，如 Tomcat、jboss 都会根据 J2EE 规范自行实现 ClassLoader。</p>
+<p>加载过程中会先检查类是否被已加载，检查顺序是自底向上，从 Custom ClassLoader 到 BootStrap ClassLoader 逐层检查，只要某个 Classloader 已加载就视为已加载此类，保证此类只所有 ClassLoade r加载一次。而加载的顺序是自顶向下，也就是由上层来逐层尝试加载此类。</p>
+<p>假设一个类变量的定义为：</p>
+<p>public static int value = 3；</p>
+<p>那么变量 value 在准备阶段过后的初始值为 0，而不是 3，因为这时候尚未开始执行任何 Java 方法，而把 value 赋值为 3 的 putstatic 指令是在程序编译后，存放于类构造器 （）方法之中的，所以把 value 赋值为 3 的动作将在初始化阶段才会执行。</p>
+<p>下表列出了 Java 中所有基本数据类型以及 reference 类型的默认零值：</p>
+<p><img src="http://wiki.jikexueyuan.com/project/java-vm/images/reference.jpg" alt="图片"></p>
+<p>这里还需要注意如下几点：</p>
+<ul>
+<li>对基本数据类型来说，对于类变量（static）和全局变量，如果不显式地对其赋值而直接使用，则系统会为其赋予默认的零值，而对于局部变量来说，在使用前必须显式地为其赋值，否则编译时不通过。</li>
+<li>对于同时被 static 和 final 修饰的常量，必须在声明的时候就为其显式地赋值，否则编译时不通过；而只被 final 修饰的常量则既可以在声明时显式地为其赋值，也可以在类初始化时显式地为其赋值，总之，在使用前必须为其显式地赋值，系统不会为其赋予默认零值。</li>
+<li>对于引用数据类型 reference 来说，如数组引用、对象引用等，如果没有对其进行显式地赋值而直接使用，系统都会为其赋予默认的零值，即null。</li>
+<li>如果在数组初始化时没有对数组中的各元素赋值，那么其中的元素将根据对应的数据类型而被赋予默认的零值。</li>
+</ul>
+<p>如果类字段的字段属性表中存在 ConstantValue 属性，即同时被 final 和 static 修饰，那么在准备阶段变量 value 就会被初始化为 ConstValue 属性所指定的值。</p>
+<p>假设上面的类变量 value 被定义为：</p>
+<p>public static final int value = 3；</p>
+<p>编译时 Javac 将会为 value 生成 ConstantValue 属性，在准备阶段虚拟机就会根据 ConstantValue 的设置将 value 赋值为 3。回忆上一篇博文中对象被动引用的第 2 个例子，便是这种情况。我们可以理解为 static final 常量在编译期就将其结果放入了调用它的类的常量池中。</p>
+<h3 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h3><p>解析阶段是虚拟机将常量池中的符号引用转化为直接引用的过程。在 Class 类文件结构一文中已经比较过了符号引用和直接引用的区别和关联，这里不再赘述。前面说解析阶段可能开始于初始化之前，也可能在初始化之后开始，虚拟机会根据需要来判断，到底是在类被加载器加载时就对常量池中的符号引用进行解析（初始化之前），还是等到一个符号引用将要被使用前才去解析它（初始化之后）。</p>
+<p>对同一个符号引用进行多次解析请求时很常见的事情，虚拟机实现可能会对第一次解析的结果进行缓存（在运行时常量池中记录直接引用，并把常量标示为已解析状态），从而避免解析动作重复进行。</p>
+<p>解析动作主要针对类或接口、字段、类方法、接口方法四类符号引用进行，分别对应于常量池中的 CONSTANT_Class_info、CONSTANT_Fieldref_info、CONSTANT_Methodref_info、CONSTANT_InterfaceMethodref_info 四种常量类型。</p>
+<p>1、类或接口的解析：判断所要转化成的直接引用是对数组类型，还是普通的对象类型的引用，从而进行不同的解析。</p>
+<p>2、字段解析：对字段进行解析时，会先在本类中查找是否包含有简单名称和字段描述符都与目标相匹配的字段，如果有，则查找结束；如果没有，则会按照继承关系从上往下递归搜索该类所实现的各个接口和它们的父接口，还没有，则按照继承关系从上往下递归搜索其父类，直至查找结束，查找流程如下图所示：</p>
+<p><img src="http://wiki.jikexueyuan.com/project/java-vm/images/interface.png" alt="图片"></p>
+<p>从下面一段代码的执行结果中很容易看出来字段解析的搜索顺序：</p>
+<p>class Super{  </p>
+<pre><code>public static int m = 11;  
+
+static{  
+
+    System.out.println(&quot;执行了super类静态语句块&quot;);  
+
+}  </code></pre><p>}  </p>
+<p>class Father extends Super{  </p>
+<pre><code>public static int m = 33;  
+
+static{  
+
+    System.out.println(&quot;执行了父类静态语句块&quot;);  
+
+}  </code></pre><p>}  </p>
+<p>class Child extends Father{  </p>
+<pre><code>static{  
+
+    System.out.println(&quot;执行了子类静态语句块&quot;);  
+
+}  </code></pre><p>}  </p>
+<p>public class StaticTest{  </p>
+<pre><code>public static void main(String[] args){  
+
+    System.out.println(Child.m);  
+
+}  </code></pre><p>}  </p>
+<p>执行结果如下：</p>
+<p> 执行了super类静态语句块</p>
+<p> 执行了父类静态语句块</p>
+<p> 33</p>
+<p>如果注释掉 Father 类中对 m 定义的那一行，则输出结果如下：</p>
+<p>执行了super类静态语句块</p>
+<p>11</p>
+<p>另外，很明显这就是上篇博文中的第 1 个例子的情况，这里我们便可以分析如下：static 变量发生在静态解析阶段，也即是初始化之前，此时已经将字段的符号引用转化为了内存引用，也便将它与对应的类关联在了一起，由于在子类中没有查找到与 m 相匹配的字段，那么 m 便不会与子类关联在一起，因此并不会触发子类的初始化。</p>
+<p>最后需要注意：理论上是按照上述顺序进行搜索解析，但在实际应用中，虚拟机的编译器实现可能要比上述规范要求的更严格一些。如果有一个同名字段同时出现在该类的接口和父类中，或同时在自己或父类的接口中出现，编译器可能会拒绝编译。如果对上面的代码做些修改，将 Super 改为接口，并将 Child 类继承 Father 类且实现 Super 接口，那么在编译时会报出如下错误：</p>
+<p>StaticTest.java:24: 对 m 的引用不明确，Father 中的 变量 m 和 Super 中的 变量 m</p>
+<p>都匹配</p>
+<pre><code>System.out.println(Child.m);
+
+                        ^</code></pre><p>1 错误</p>
+<p>3、类方法解析：对类方法的解析与对字段解析的搜索步骤差不多，只是多了判断该方法所处的是类还是接口的步骤，而且对类方法的匹配搜索，是先搜索父类，再搜索接口。</p>
+<p>4、接口方法解析：与类方法解析步骤类似，知识接口不会有父类，因此，只递归向上搜索父接口就行了。</p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>初始化是类加载过程的最后一步，到了此阶段，才真正开始执行类中定义的 Java 程序代码。在准备阶段，类变量已经被赋过一次系统要求的初始值，而在初始化阶段，则是根据程序员通过程序指定的主观计划去初始化类变量和其他资源，或者可以从另一个角度来表达：初始化阶段是执行类构造器()方法的过程。</p>
+<p><strong>这里简单说明下()方法的执行规则:</strong></p>
+<p>1、()方法是由编译器自动收集类中的所有类变量的赋值动作和静态语句块中的语句合并产生的，编译器收集的顺序是由语句在源文件中出现的顺序所决定的，静态语句块中只能访问到定义在静态语句块之前的变量，定义在它之后的变量，在前面的静态语句中可以赋值，但是不能访问。</p>
+<p>2、（）方法与实例构造器()方法（类的构造函数）不同，它不需要显式地调用父类构造器，虚拟机会保证在子类的()方法执行之前，父类的()方法已经执行完毕。因此，在虚拟机中第一个被执行的()方法的类肯定是java.lang.Object。</p>
+<p>3、()方法对于类或接口来说并不是必须的，如果一个类中没有静态语句块，也没有对类变量的赋值操作，那么编译器可以不为这个类生成()方法。</p>
+<p>4、接口中不能使用静态语句块，但仍然有类变量（final static）初始化的赋值操作，因此接口与类一样会生成()方法。但是接口鱼类不同的是：执行接口的()方法不需要先执行父接口的()方法，只有当父接口中定义的变量被使用时，父接口才会被初始化。另外，接口的实现类在初始化时也一样不会执行接口的()方法。</p>
+<p>5、虚拟机会保证一个类的()方法在多线程环境中被正确地加锁和同步，如果多个线程同时去初始化一个类，那么只会有一个线程去执行这个类的()方法，其他线程都需要阻塞等待，直到活动线程执行()方法完毕。如果在一个类的()方法中有耗时很长的操作，那就可能造成多个线程阻塞，在实际应用中这种阻塞往往是很隐蔽的。</p>
+<p>下面给出一个简单的例子，以便更清晰地说明如上规则：</p>
+<p>class Father{  </p>
+<pre><code>public static int a = 1;  
+
+static{  
+
+    a = 2;  
+
+}  </code></pre><p>}  </p>
+<p>class Child extends Father{  </p>
+<pre><code>public static int b = a;  </code></pre><p>}  </p>
+<p>public class ClinitTest{  </p>
+<pre><code>public static void main(String[] args){  
+
+    System.out.println(Child.b);  
+
+}  </code></pre><p>}  </p>
+<p>执行上面的代码，会打印出 2，也就是说 b 的值被赋为了 2。</p>
+<p>我们来看得到该结果的步骤。首先在准备阶段为类变量分配内存并设置类变量初始值，这样 A 和 B 均被赋值为默认值 0，而后再在调用()方法时给他们赋予程序中指定的值。当我们调用 Child.b 时，触发 Child 的()方法，根据规则 2，在此之前，要先执行完其父类Father的()方法，又根据规则1，在执行()方法时，需要按 static 语句或 static 变量赋值操作等在代码中出现的顺序来执行相关的 static 语句，因此当触发执行 Fathe r的()方法时，会先将 a 赋值为 1，再执行 static 语句块中语句，将 a 赋值为 2，而后再执行 Child 类的()方法，这样便会将 b 的赋值为 2。</p>
+<p>如果我们颠倒一下 Father 类中“public static int a = 1;”语句和“static语句块”的顺序，程序执行后，则会打印出1。很明显是根据规则 1，执行 Father 的()方法时，根据顺序先执行了 static 语句块中的内容，后执行了“public static int a = 1;”语句。</p>
+<p>另外，在颠倒二者的顺序之后，如果在 static 语句块中对 a 进行访问（比如将 a 赋给某个变量），在编译时将会报错，因为根据规则 1，它只能对 a 进行赋值，而不能访问。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>整个类加载过程中，除了在加载阶段用户应用程序可以自定义类加载器参与之外，其余所有的动作完全由虚拟机主导和控制。到了初始化才开始执行类中定义的 Java 程序代码（亦及字节码），但这里的执行代码只是个开端，它仅限于()方法。类加载过程中主要是将 Class 文件（准确地讲，应该是类的二进制字节流）加载到虚拟机内存中，真正执行字节码的操作，在加载完成后才真正开始。</p>
+<h2 id="例子：ClassLoader引发的ClassCastException"><a href="#例子：ClassLoader引发的ClassCastException" class="headerlink" title="例子：ClassLoader引发的ClassCastException"></a>例子：ClassLoader引发的ClassCastException</h2><p><a href="http://wiki.jikexueyuan.com/project/java-vm/class-loading-mechanism.html" target="_blank" rel="noopener">http://wiki.jikexueyuan.com/project/java-vm/class-loading-mechanism.html</a>   类加载机制</p>
+<p><a href="http://wiki.jikexueyuan.com/project/java-special-topic/virtual-machine.html" target="_blank" rel="noopener">http://wiki.jikexueyuan.com/project/java-special-topic/virtual-machine.html</a>    java虚拟机</p>
+<p><a href="https://www.cnblogs.com/dingyingsi/p/3760447.html" target="_blank" rel="noopener">https://www.cnblogs.com/dingyingsi/p/3760447.html</a>  深入理解jvm不太好，搬书，但是有各种溢出的例子</p>
+<h1 id="jvm内存模型"><a href="#jvm内存模型" class="headerlink" title="jvm内存模型"></a>jvm内存模型</h1><p>java虚拟机会给每个线程分配一个独立的程序计数器、栈、本地方法栈。</p>
+<p>栈–各个栈帧（每个方法有一个独立的栈帧，主要四个部分：局部变量表、操作数栈、动态链接、方法出口）先进后出</p>
+<p>局部变量表</p>
+<p>操作数栈</p>
+<p>动态链接</p>
+<p>方法出口–当调用一个方法的时候，就已经将调用现场的位置保存下来存入被调用方法的方法出口里，当执行完毕就回到调用的位置</p>
+<p>程序计数器 —指向当前线程所执行的字节码指令的（地址）行号（用于比如当这个线程执行过程中被抢占，当重新获得时继续位置执行）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public class Math&#123;</span><br><span class="line">  public static final int initData&#x3D;666；&#x2F;&#x2F;initData存在方法区 </span><br><span class="line">  public static User user &#x3D; new User()；&#x2F;&#x2F;user 放在方法区，但只是存放</span><br><span class="line">user在堆里的内存地址 也就是方法区有指针指向堆；</span><br><span class="line">  public int compute()&#123;</span><br><span class="line">   int a &#x3D; 1；&#x2F;&#x2F;先将1存入操作数栈，a存入局部变量表，将1赋值给a即存入局部变量表a的地址里</span><br><span class="line">    int b &#x3D; 2；</span><br><span class="line">    int c &#x3D; (a+b)*10；</span><br><span class="line">    return c；</span><br><span class="line">  &#125;</span><br><span class="line">  public static void main(String[] args)&#123;</span><br><span class="line">    Math math &#x3D; new Math()；</span><br><span class="line">    math.compute()；</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://uploader.shimo.im/f/Ua1MKzWZi9QqeedP.png!thumbnail" alt="图片"></p>
+<p>栈里面是局部变量，如果是对象类型的，则会有指针指向堆。堆里放的是对象</p>
+<p>jdk1.8之后 方法区改名叫元空间。用的是物理内存，不是jvm分配的</p>
+<p>本地方法：有native修饰 如start0()方法 底层实现是用c语言写的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Math math &#x3D; new Math();</span><br><span class="line">Math math2 &#x3D; new Math();</span><br></pre></td></tr></table></figure>
+<p>这种情况会在堆里有两个Math对象，math 和math2 分别指向这两个。但是堆里这两个共享Math.class的类元信息</p>
+<h3 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h3><p>年轻代（Eden：s0（from）：s1（to）=8:1:1）:老年代 = 1：2</p>
+<p>GC Roots根节点：线程栈的本地变量、静态变量、本地方法栈的变量等。</p>
+<p>从GC Root出发去找所有被引用的对象，被GC Root链条上引用的是非垃圾对象，复制到s0 或者s1 （看哪个是空的）如果不在链条上则是垃圾对象，进行回收。每复制一次分代年龄加1</p>
+<p>minorGC: 回收游离的对象。</p>
+<p>fullGC: Old满了的时候，对整个堆的垃圾对象进行回收</p>
+<p>OOM :OutOfMemory</p>
+<p>STW: StopTheWorld。当jvm开始GC时 即启动系统线程， 会停止掉所有用户线程，例如用户刚刚下单时GC，用户会感觉卡顿了一下，当GC完成后会恢复执行。</p>
+<p>为什么要STW？因为如果一起运行，会影响GC Root链条的结果，刚才收集的结果可能发生了变化，涉及多线程操作</p>
+<p>为什么进行JVM调优？—》减少STW，也就是减少GC</p>
+<p>朝生夕死的对象争取在minorGC就干掉，不要留到fullGC</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/06/04/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3java%E8%99%9A%E6%8B%9F%E6%9C%BA-Part-1/" data-id="ckazsftlm00007sd28qto4gby" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2020/06/04/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Hello World</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/06/04/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3java%E8%99%9A%E6%8B%9F%E6%9C%BA-Part-1/">深入理解java虚拟机(Part 1)</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/04/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
